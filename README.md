@@ -139,21 +139,6 @@ WorkflowState:
 
 ## 🔧 Customization Ideas
 
-### Extending the System
-
-1. **Add More Agents**: Nutrition analyzer, cost calculator, meal planner
-2. **Enhance Workflow**: Add conditional paths, loops, or user feedback
-3. **Improve Frontend**: Add voice input, recipe saving, shopping lists
-4. **Data Integration**: Connect to recipe databases or nutritional APIs
-
-### Learning Exercises
-
-1. **Modify Agent Behavior**: Change prompts to alter agent personalities
-2. **Add Workflow Steps**: Insert additional processing nodes
-3. **Create New Agents**: Build agents for other cooking-related tasks
-4. **Experiment with State**: Add new fields to track additional information
-
-### Next Steps
-
 1. Read the [LangGraph documentation](https://langchain-ai.github.io/langgraph/)
 2. Make custom agents (e.g. specializing in Chinese cuisine by editing agent role)
+3. Add more agents (cost calculators)
