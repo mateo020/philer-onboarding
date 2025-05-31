@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Creation Chatbot</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .chat-container {
+        width: 90%;
+        max-width: 800px;
+        height: 80vh;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .chat-header h1 {
+        margin-bottom: 5px;
+        font-size: 24px;
+      }
+
+      .chat-header p {
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f8f9fa;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .message.user {
+        justify-content: flex-end;
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .message.user .message-content {
+        background: #007bff;
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message.bot .message-content {
+        background: white;
+        color: #333;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        white-space: pre-wrap;
+      }
+
+      .message.bot .message-content h1,
+      .message.bot .message-content h2,
+      .message.bot .message-content h3 {
+        color: #667eea;
+        margin: 10px 0 5px 0;
+      }
+
+      .message.bot .message-content h1 {
+        font-size: 18px;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 5px;
+      }
+
+      .message.bot .message-content h2 {
+        font-size: 16px;
+        margin-top: 15px;
+      }
+
+      .loading {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .loading-dots {
+        display: flex;
+        gap: 4px;
+      }
+
+      .loading-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #667eea;
+        animation: pulse 1.4s ease-in-out infinite both;
+      }
+
+      .loading-dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .loading-dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes pulse {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+
+      .chat-input-container {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .chat-input-form {
+        display: flex;
+        gap: 10px;
+      }
+
+      .chat-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      .chat-input:focus {
+        border-color: #667eea;
+      }
+
+      .send-button {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+
+      .send-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .welcome-message {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        margin: 20px 0;
+      }
+
+      /* Scrollbar styling */
+      .chat-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: #5a67d8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <h1>🍳 Recipe Creation Assistant</h1>
+        <p>
+          Tell me what kind of recipe you'd like, and I'll create and evaluate
+          it for you!
+        </p>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="welcome-message">
+          👋 Welcome! Ask me to create any recipe - for example:<br />
+          "I want a healthy pasta dish with vegetables"<br />
+          "Create a quick breakfast recipe with eggs"<br />
+          "Make me a vegetarian dinner for 4 people"
+        </div>
+      </div>
+
+      <div class="loading" id="loadingIndicator">
+        <div class="message-content">
+          <span>🤖 Working on your recipe...</span>
+          <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <form class="chat-input-form" id="chatForm">
+          <input
+            type="text"
+            class="chat-input"
+            id="chatInput"
+            placeholder="Describe the recipe you'd like me to create..."
+            autocomplete="off"
+          />
+          <button type="submit" class="send-button" id="sendButton">
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const chatMessages = document.getElementById("chatMessages");
+      const chatForm = document.getElementById("chatForm");
+      const chatInput = document.getElementById("chatInput");
+      const sendButton = document.getElementById("sendButton");
+      const loadingIndicator = document.getElementById("loadingIndicator");
+
+      function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${isUser ? "user" : "bot"}`;
+
+        const messageContent = document.createElement("div");
+        messageContent.className = "message-content";
+
+        if (isUser) {
+          messageContent.textContent = content;
+        } else {
+          // Convert markdown-style formatting for bot messages
+          const formattedContent = content
+            .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+            .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+            .replace(/^### (.*$)/gm, "<h3>$1</h3>")
+            .replace(/^\* (.*$)/gm, "• $1")
+            .replace(/^(\d+\.) (.*$)/gm, "<strong>$1</strong> $2")
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>")
+            .replace(
+              /---/g,
+              '<hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">'
+            );
+
+          messageContent.innerHTML = formattedContent;
+        }
+
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function showLoading() {
+        loadingIndicator.style.display = "flex";
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function hideLoading() {
+        loadingIndicator.style.display = "none";
+      }
+
+      function setInputDisabled(disabled) {
+        chatInput.disabled = disabled;
+        sendButton.disabled = disabled;
+        sendButton.textContent = disabled ? "Creating..." : "Send";
+      }
+
+      chatForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, true);
+        chatInput.value = "";
+
+        // Show loading and disable input
+        showLoading();
+        setInputDisabled(true);
+
+        try {
+          const response = await fetch("/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message: message }),
+          });
+
+          const data = await response.json();
+
+          // Hide loading
+          hideLoading();
+
+          // Add bot response
+          addMessage(data.response, false);
+
+          if (data.error) {
+            console.error("Error from server:", data.response);
+          }
+        } catch (error) {
+          hideLoading();
+          addMessage(
+            "Sorry, I encountered an error connecting to the server. Please try again.",
+            false
+          );
+          console.error("Error:", error);
+        } finally {
+          setInputDisabled(false);
+          chatInput.focus();
+        }
+      });
+
+      // Focus input on page load
+      chatInput.focus();
+    </script>
+  </body>
+</html>
