@@ -23,6 +23,10 @@ class WorkflowState(TypedDict):
     """
     user_input: str
     recipe: str
+    nutrition_profile: str
+    nutrient_profile: str
+    goal_compliance: str
+    weight: int
     evaluation: str
     final_output: str
     step: str

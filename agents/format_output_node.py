@@ -35,7 +35,12 @@ def format_final_output_node(state: WorkflowState) -> WorkflowState:
 ## 📋 Professional Evaluation
 {state['evaluation']}
 
+
 ---
+
+
+##  Nutritiona Evaluation
+{state['nutrient_profile']}
 
 *This recipe was created by our Recipe Creator agent and evaluated by our Recipe Evaluator agent for quality assurance.*
 """

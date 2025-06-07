@@ -14,38 +14,50 @@ from agents import (
     WorkflowState,
     create_recipe_node,
     evaluate_recipe_node,
-    format_final_output_node
+    format_final_output_node,
+    evaluate_goal_node,
+    analyse_nutrition_node,
+    nearby_restaurants_node
+
 )
 
 # Load environment variables
 load_dotenv()
 
 
-def build_workflow() -> StateGraph:
-    """
-    Build the LangGraph workflow using modular node functions.
+def build_workflow() -> StateGraph:  # type: ignore[valid-type]
+    """Compile the LangGraph recipe workflow graph."""
 
-    This function creates a workflow graph that connects the different
-    node functions in a linear sequence: create -> evaluate -> format
+    graph = StateGraph(WorkflowState)
 
-    Returns:
-        StateGraph: Configured and compiled workflow graph
-    """
-    # Create the graph
-    workflow = StateGraph(WorkflowState)
+    # Add each node
+    graph.add_node("create_recipe", create_recipe_node)
+    graph.add_node("analyse_nutrition", analyse_nutrition_node)
+    graph.add_node("evaluate_goal", evaluate_goal_node)
+    graph.add_node("evaluate_recipe", evaluate_recipe_node)
+    graph.add_node("nearby_restaurants", nearby_restaurants_node)
+    graph.add_node("format_final_output", format_final_output_node)
 
-    # Add nodes using the imported node functions
-    workflow.add_node("create_recipe", create_recipe_node)
-    workflow.add_node("evaluate_recipe", evaluate_recipe_node)
-    workflow.add_node("format_final_output", format_final_output_node)
 
-    # Add edges (define the flow)
-    workflow.set_entry_point("create_recipe")
-    workflow.add_edge("create_recipe", "evaluate_recipe")
-    workflow.add_edge("evaluate_recipe", "format_final_output")
-    workflow.add_edge("format_final_output", END)
+    # Wire edges
+    graph.set_entry_point("create_recipe")
+    graph.add_edge("create_recipe", "analyse_nutrition")
+    graph.add_edge("analyse_nutrition", "evaluate_goal")
+ 
+    graph.add_conditional_edges(
+    "evaluate_goal",                     # source node
+    lambda s:                            
+        "create_recipe" if s["goal_compliance"] == "NO" else "evaluate_recipe",
+    [
+        "create_recipe",                 # allowed branch if goal not met
+        "evaluate_recipe",               # normal forward branch
+    ],
+)
 
-    return workflow.compile()
+    graph.add_edge("evaluate_recipe", "format_final_output")
+    graph.add_edge("format_final_output", END)
+
+    return graph.compile()
 
 
 def run_workflow(user_input: str) -> str:
@@ -71,8 +83,11 @@ def run_workflow(user_input: str) -> str:
     initial_state = WorkflowState(
         user_input=user_input,
         recipe="",
-        evaluation="",
-        final_output="",
+        nutrition_profile= "",
+        goal_compliance= "weight loss",
+        weight= 200,
+        evaluation = "",
+        final_output= "",
         step="starting"
     )
 

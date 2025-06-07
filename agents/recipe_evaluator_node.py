@@ -37,7 +37,7 @@ def evaluate_recipe_node(state: WorkflowState) -> WorkflowState:
     recipe_evaluator = RecipeEvaluatorAgent(llm)
 
     # Evaluate the recipe
-    evaluation = recipe_evaluator.evaluate_recipe(state["recipe"])
+    evaluation = recipe_evaluator.evaluate_recipe(state["recipe"],state["nutrition_profile"], state["nutrient_profile"])
 
     return {
         **state,
