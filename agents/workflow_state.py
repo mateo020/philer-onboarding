@@ -26,6 +26,7 @@ class WorkflowState(TypedDict):
     nutrition_profile: str
     nutrient_profile: str
     goal_compliance: str
+    goal: str
     weight: int
     evaluation: str
     final_output: str

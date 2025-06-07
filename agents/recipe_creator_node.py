@@ -33,6 +33,13 @@ def create_recipe_node(state: WorkflowState) -> WorkflowState:
         temperature=0.7,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
+    user_prompt = state["user_input"]
+    if state["goal_compliance"] == "NO" and state["goal"]:
+            user_prompt += (
+            f"\n\nNOTE: The previous recipe did not satisfy my goal of *{state['goal']}*. "
+            "Please adjust ingredients, macros, and portion sizes to meet this goal."
+        )
+
 
     recipe_creator = RecipeCreatorAgent(llm)
 

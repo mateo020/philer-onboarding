@@ -73,15 +73,7 @@ class EvaluateNutritionalContent:
     single token: **YES** if compliant, **NO** otherwise.
     """
 
-    ALLOWED_GOALS = {
-        "weight loss",
-        "maintenance",
-        "weight gain",
-        "muscle gain",
-        "low carb",
-        "keto",
-        "low sodium",
-    }
+  
 
     def __init__(self, llm: ChatOpenAI):
         self.llm = llm
@@ -99,19 +91,19 @@ class EvaluateNutritionalContent:
             (
                 "human",
                 (
-                    "Goal: {goal}\n\nNutrient Profile:\n{nutrients}\n\nDoes this profile support the goal?"
+                    "Goal: {goal}\n\nNutrient Profile:\n{nutrients}\n\nDoes this profile support the goal:{goal} given users weight:{weight}?"
                 ),
             ),
         ])
 
 
-    def evaluate(self, goal: str, nutrient_profile: str) -> str:
+    def evaluate(self, goal: str, nutrient_profile: str, weight: str) -> str:
         """Return 'YES' if profile supports goal, else 'NO'."""
         print(f"goal{goal}")
         
 
         chain = self.prompt_template | self.llm
-        response = chain.invoke({"goal": goal, "nutrients": nutrient_profile})
+        response = chain.invoke({"goal": goal, "nutrients": nutrient_profile, "weight": weight})
         verdict = response.content.strip().upper()
         # force normalization
         return "YES" if verdict.startswith("Y") else "NO"
@@ -141,6 +133,7 @@ class RecipeEvaluatorAgent:
             Your role is to evaluate recipes for logic, safety, and quality.
             
             Evaluation Criteria:
+            - Explicitly mention the fitness goal
             - Cooking logic and procedure correctness
             - Food safety considerations
             - Ingredient compatibility and proportions

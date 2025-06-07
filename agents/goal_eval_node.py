@@ -37,8 +37,8 @@ def evaluate_goal_node(state: WorkflowState) -> WorkflowState:
     goal_evaluator = EvaluateNutritionalContent(llm)
 
     # Generate the recipe
-    verdict = goal_evaluator.evaluate(state["nutrient_profile"], state["nutrition_profile"])
-
+    verdict = goal_evaluator.evaluate(state["goal"], state["nutrition_profile"], state["weight"])
+    print(f"verdict---->{verdict}")
     return {
         **state,
         "goal_compliance": verdict,
